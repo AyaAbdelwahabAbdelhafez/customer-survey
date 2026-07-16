@@ -1099,7 +1099,7 @@
         if (new Date(r.created_at) > d) return false;
       }
       if (search) {
-        const text = [r.branch, r.employee, r.service, r.comments, JSON.stringify(r.ratings)].join(' ').toLowerCase();
+        const text = [r.branch, r.employee, r.service, r.customerNumber, r.comments, JSON.stringify(r.ratings)].join(' ').toLowerCase();
         if (!text.includes(search)) return false;
       }
       return true;
@@ -1469,7 +1469,7 @@
     let items = filteredData;
     if (search) {
       items = items.filter(r => {
-        const text = [r.branch, r.employee, r.service, r.comments, JSON.stringify(r.ratings)].join(' ').toLowerCase();
+        const text = [r.branch, r.employee, r.service, r.customerNumber, r.comments, JSON.stringify(r.ratings)].join(' ').toLowerCase();
         return text.includes(search);
       });
     }
@@ -1483,12 +1483,12 @@
 
     let html = `<table>
       <thead><tr>
-        <th>#</th><th>التاريخ</th><th>الفرع</th><th>الموظف</th><th>الخدمة</th><th>التقييم</th><th>التعليق</th>
+        <th>#</th><th>التاريخ</th><th>الفرع</th><th>الموظف</th><th>الخدمة</th><th>رقم العميل</th><th>التقييم</th><th>التعليق</th>
         <th>إجراء</th>
       </tr></thead><tbody>`;
 
     if (!pageItems.length) {
-      html += `<tr><td colspan="8" style="text-align:center;padding:30px;color:#64748b;">لا توجد بيانات</td></tr>`;
+      html += `<tr><td colspan="9" style="text-align:center;padding:30px;color:#64748b;">لا توجد بيانات</td></tr>`;
     } else {
       pageItems.forEach((r, i) => {
         const avg = getAvgRating(r.ratings).toFixed(1);
@@ -1498,6 +1498,7 @@
           <td>${r.branch || '-'}</td>
           <td>${r.employee || '-'}</td>
           <td>${r.service || '-'}</td>
+          <td>${r.customerNumber || '-'}</td>
           <td><strong>${avg}</strong></td>
           <td>${r.comments ? r.comments.slice(0, 50) + (r.comments.length > 50 ? '...' : '') : '-'}</td>
           <td><button onclick="deleteResponse(${r.id})" style="background:#e74c5e;color:#fff;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;">🗑️</button></td>
@@ -1638,10 +1639,10 @@
       return;
     }
 
-    const headers = ['التاريخ', 'الفرع', 'الموظف', 'الخدمة', 'التقييم', 'التعليق'];
+    const headers = ['التاريخ', 'الفرع', 'الموظف', 'الخدمة', 'رقم العميل', 'التقييم', 'التعليق'];
     const rows = filteredData.map(r => {
       const avg = getAvgRating(r.ratings).toFixed(1);
-      return [formatDate(r.created_at), r.branch || '', r.employee || '', r.service || '', avg, r.comments || ''];
+      return [formatDate(r.created_at), r.branch || '', r.employee || '', r.service || '', r.customerNumber || '', avg, r.comments || ''];
     });
 
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -1669,6 +1670,7 @@
         'الفرع': r.branch || '',
         'الموظف': r.employee || '',
         'الخدمة': r.service || '',
+        'رقم العميل': r.customerNumber || '',
         'التقييم': avg,
         'التعليق': r.comments || ''
       };

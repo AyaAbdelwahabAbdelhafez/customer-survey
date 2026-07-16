@@ -92,7 +92,8 @@
   }
 
   .field select,
-  .field textarea {
+  .field textarea,
+  .field input {
     width: 100%;
     padding: 10px 14px;
     border: 2px solid #e2e8f0;
@@ -104,7 +105,8 @@
   }
 
   .field select:focus,
-  .field textarea:focus {
+  .field textarea:focus,
+  .field input:focus {
     border-color: #0FA3A3;
     outline: none;
     box-shadow: 0 0 0 4px rgba(15, 163, 163, 0.1);
@@ -294,6 +296,11 @@
       </select>
     </div>
 
+    <div class="field">
+      <label>رقم العميل <span class="opt">(اختياري - رقم الجوال)</span></label>
+      <input type="tel" id="customerNumber" placeholder="مثال: 05xxxxxxxx">
+    </div>
+
     <h2 style="margin-top:24px;"><span class="dot"></span>تقييم تجربتك</h2>
     <div id="ratingsWrap"></div>
     <p style="font-size:12px;color:#64748b;margin:10px 0 0;">اضغط على الأعمدة لتحديد التقييم من 1 إلى 5</p>
@@ -477,6 +484,7 @@
     const branch = $('branch').value;
     const employee = $('employee').value;
     const service = $('service').value;
+    const customerNumber = $('customerNumber').value.trim();
     const comments = $('comments').value.trim();
 
     const allRated = RATING_ITEMS.every(item => ratingValues[item.id] > 0);
@@ -496,6 +504,7 @@
         branch,
         employee,
         service,
+        customerNumber,
         ratings: { ...ratingValues },
         comments,
         created_at: new Date().toISOString()
