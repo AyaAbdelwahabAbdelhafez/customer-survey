@@ -276,13 +276,6 @@
     <h2><span class="dot"></span>معلومات الزيارة</h2>
 
     <div class="field">
-      <label>الفرع <span class="req">*</span></label>
-      <select id="branch" required>
-        <option value="">اختر الفرع</option>
-      </select>
-    </div>
-
-    <div class="field">
       <label>الموظف <span class="req">*</span></label>
       <select id="employee" required>
         <option value="">اختر الموظف</option>
@@ -334,7 +327,6 @@
   // لو تركتيه فاضي، النظام هيشتغل محلياً فقط (نفس الجهاز) كما كان قبل كده
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwqh0CZz_bNa-Cyx_QoFaUJrVHH8RI0CtP7eca7Wa329JF-m1opplINRZZQt995SB0R/exec';
 
-  const BRANCHES = ['فرع النزهة', 'فرع المنيزلة'];
   const DEFAULT_EMPLOYEES = ['ماجد الجمعان', 'مهدي الحاجي', 'باسم محمد', 'حسين البرايم'];
   const SERVICES = ['جوالات', 'إكسسوارات', 'خدمات الإنترنت'];
   const RATING_ITEMS = [
@@ -350,7 +342,6 @@
   let ratingValues = {};
   const STORAGE_KEY = 'survey_responses';
   const EMPLOYEES_KEY = 'survey_employees';
-  const BRANCHES_KEY = 'survey_branches';
 
   // ================================================================
   //  دوال مساعدة
@@ -423,46 +414,10 @@
     }
   }
 
-  // تُقرأ قائمة الفروع من نفس المخزن الذي تديره لوحة التحكم، بحيث يمكن
-  // إضافة فرع جديد أو إخفاء فرع (دون حذف بياناته السابقة) من هناك دون
-  // تعديل هذا الملف. الفروع "المخفية" لا تظهر هنا للعميل، لكنها تبقى
-  // ظاهرة في تقارير لوحة التحكم لأن الردود القديمة تحتفظ باسم الفرع
-  function loadBranchesLocal() {
-    try {
-      const data = localStorage.getItem(BRANCHES_KEY);
-      if (data) {
-        const parsed = JSON.parse(data);
-        if (Array.isArray(parsed) && parsed.length) {
-          return parsed.filter(b => !b.hidden).map(b => b.name);
-        }
-      }
-    } catch (e) {}
-    const seeded = BRANCHES.map(name => ({ name, hidden: false }));
-    try { localStorage.setItem(BRANCHES_KEY, JSON.stringify(seeded)); } catch (e) {}
-    return [...BRANCHES];
-  }
-
-  async function loadBranches() {
-    if (!APPS_SCRIPT_URL) return loadBranchesLocal();
-    try {
-      const res = await fetch(`${APPS_SCRIPT_URL}?action=branches`);
-      const data = await res.json();
-      if (data.status === 'success' && Array.isArray(data.branches) && data.branches.length) {
-        try { localStorage.setItem(BRANCHES_KEY, JSON.stringify(data.branches)); } catch (e) {}
-        return data.branches.filter(b => !b.hidden).map(b => b.name);
-      }
-      return loadBranchesLocal();
-    } catch (err) {
-      console.error('تعذر تحميل الفروع من الشيت، سيتم استخدام النسخة المحلية:', err);
-      return loadBranchesLocal();
-    }
-  }
-
   // ================================================================
   //  تهيئة النموذج
   // ================================================================
   async function initSurvey() {
-    fillSelect($('branch'), await loadBranches());
     fillSelect($('employee'), await loadEmployees());
     fillSelect($('service'), SERVICES);
 
@@ -517,14 +472,13 @@
   $('surveyForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const branch = $('branch').value;
     const employee = $('employee').value;
     const service = $('service').value;
     const customerNumber = $('customerNumber').value.trim();
     const comments = $('comments').value.trim();
 
     const allRated = RATING_ITEMS.every(item => ratingValues[item.id] > 0);
-    if (!branch || !employee || !service || !allRated) {
+    if (!employee || !service || !allRated) {
       $('errorMsg').style.display = 'block';
       return;
     }
@@ -537,7 +491,6 @@
     try {
       const data = {
         id: Date.now(),
-        branch,
         employee,
         service,
         customerNumber,
